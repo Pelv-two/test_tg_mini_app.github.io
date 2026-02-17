@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Telegram Mini App Test</title>
+    
+    <!-- Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Светлая тема */
+        body.light-theme {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        /* Темная тема Telegram */
+        body.dark-theme {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: var(--tg-theme-bg-color, rgba(255, 255, 255, 0.95));
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        body.dark-theme .card {
+            background: rgba(30, 30, 46, 0.95);
+            color: #fff;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--tg-theme-hint-color, #666);
+            text-align: center;
+        }
+        
+        .info-grid {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .info-item {
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid #667eea;
+        }
+        
+        body.dark-theme .info-item {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .info-content {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999);
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .badge-telegram {
+            background: #0088cc;
+            color: white;
+        }
+        
+        .badge-web {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999);
+        }
+        
+        .status-badge {
+            background: #10b981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--tg-theme-hint-color, #999);
+            font-size: 12px;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="card" style="text-align: center;">
+            <h1>🤖 Telegram Mini App</h1>
+            <h2>Тестовая страница</h2>
+            <div id="platform-badge"></div>
+        </div>
+        
+        <!-- Информация о пользователе -->
+        <div class="card">
+            <h2 style="text-align: left; margin-bottom: 15px;">👤 Информация о пользователе</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-icon">🆔</span>
+                    <div class="info-content">
+                        <div class="info-label">Telegram ID</div>
+                        <div class="info-value" id="user-id">Загрузка...</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-icon">👤</span>
+                    <div class="info-content">
+                        <div class="info-label">Имя</div>
+                        <div class="info-value" id="first-name">Загрузка...</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-icon">📝</span>
+                    <div class="info-content">
+                        <div class="info-label">Фамилия</div>
+                        <div class="info-value" id="last-name">Загрузка...</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-icon">📧</span>
+                    <div class="info-content">
+                        <div class="info-label">Username</div>
+                        <div class="info-value" id="username">Загрузка...</div>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-icon">🌐</span>
+                    <div class="info-content">
+                        <div class="info-label">Язык</div>
+                        <div class="info-value" id="language">Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="status" style="text-align: center;"></div>
+        </div>
+        
+        <!-- Информация о приложении -->
+        <div class="card">
+            <h2 style="text-align: left; margin-bottom: 15px;">📱 Информация о приложении</h2>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="viewport-height">-</div>
+                    <div class="stat-label">Высота</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="viewport-width">-</div>
+                    <div class="stat-label">Ширина</div>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-icon">🎨</span>
+                <div class="info-content">
+                    <div class="info-label">Тема</div>
+                    <div class="info-value" id="theme">Загрузка...</div>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-icon">📦</span>
+                <div class="info-content">
+                    <div class="info-label">Версия платформы</div>
+                    <div class="info-value" id="platform-version">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопки -->
+        <div class="card">
+            <button class="button" onclick="sendTestData()">
+                📤 Отправить тестовые данные
+            </button>
+            
+            <button class="button" onclick="showTelegramAlert()">
+                🔔 Показать Alert
+            </button>
+            
+            <button class="button" onclick="showTelegramConfirm()">
+                ❓ Показать Confirm
+            </button>
+            
+            <button class="button" onclick="copyUserData()">
+                📋 Копировать данные
+            </button>
+            
+            <button class="button" onclick="expandApp()">
+                ↔️ Расширить на весь экран
+            </button>
+            
+            <button class="button" onclick="closeApp()">
+                ❌ Закрыть приложение
+            </button>
+        </div>
+        
+        <!-- Данные инициализации -->
+        <div class="card">
+            <h2 style="text-align: left; margin-bottom: 15px;">🔧 Данные инициализации</h2>
+            <div class="info-item">
+                <div class="info-content">
+                    <div class="info-label">initData</div>
+                    <div class="info-value" id="init-data" style="font-size: 10px;">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            🧪 Telegram Mini App Test Page | Flask + Telegram
+        </div>
+    </div>
+    
+    <script>
+        // Глобальная переменная для Telegram
+        let tg = null;
+        let userData = {};
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем Telegram
+            if (window.Telegram && Telegram.WebApp) {
+                tg = Telegram.WebApp;
+                tg.expand();
+                tg.ready();
+                
+                // Показываем платформу
+                document.getElementById('platform-badge').innerHTML = 
+                    '<span class="badge badge-telegram">✅ Запущено в Telegram</span>';
+                
+                // Применяем тему
+                const theme = tg.colorScheme;
+                document.body.classList.add(theme === 'dark' ? 'dark-theme' : 'light-theme');
+                document.getElementById('theme').textContent = theme === 'dark' ? '🌙 Темная' : '☀️ Светлая';
+                
+                // Получаем данные пользователя
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    userData = user;
+                    
+                    document.getElementById('user-id').textContent = user.id || 'Не указано';
+                    document.getElementById('first-name').textContent = user.first_name || 'Не указано';
+                    document.getElementById('last-name').textContent = user.last_name || 'Не указано';
+                    document.getElementById('username').textContent = user.username ? '@' + user.username : 'Не указано';
+                    document.getElementById('language').textContent = user.language_code || 'Не указано';
+                } else {
+                    setDemoData();
+                }
+                
+                // Показываем initData
+                if (tg.initData) {
+                    document.getElementById('init-data').textContent = tg.initData.substring(0, 50) + '...';
+                }
+                
+                // Информация о платформе
+                document.getElementById('platform-version').textContent = tg.version || '1.0';
+                
+                // Обновляем размеры
+                updateViewport();
+                
+                console.log('✅ Telegram Mini App инициализирован');
+            } else {
+                // Демо-режим
+                document.getElementById('platform-badge').innerHTML = 
+                    '<span class="badge badge-web">⚠️ Демо-режим (не в Telegram)</span>';
+                
+                setDemoData();
+                document.body.classList.add('light-theme');
+                document.getElementById('theme').textContent = '☀️ Светлая (демо)';
+                document.getElementById('platform-version').textContent = 'Демо';
+                updateViewport();
+                
+                console.log('⚠️ Демо-режим');
+            }
+        });
+        
+        // Установка демо-данных
+        function setDemoData() {
+            document.getElementById('user-id').textContent = '123456789';
+            document.getElementById('first-name').textContent = 'Тестовый';
+            document.getElementById('last-name').textContent = 'Пользователь';
+            document.getElementById('username').textContent = '@test_user';
+            document.getElementById('language').textContent = 'ru';
+            document.getElementById('init-data').textContent = 'Демо-режим';
+        }
+        
+        // Обновление размеров
+        function updateViewport() {
+            document.getElementById('viewport-height').textContent = window.innerHeight + 'px';
+            document.getElementById('viewport-width').textContent = window.innerWidth + 'px';
+        }
+        
+        // Отправка тестовых данных
+        function sendTestData() {
+            if (tg) {
+                const data = {
+                    action: 'test_action',
+                    user_id: userData.id,
+                    timestamp: new Date().toISOString(),
+                    data: 'Тестовые данные'
+                };
+                
+                tg.sendData(JSON.stringify(data));
+                showStatus('✅ Данные отправлены в Telegram!');
+            } else {
+                showStatus('⚠️ Демо-режим: данные не отправлены');
+            }
+        }
+        
+        // Показать Alert
+        function showTelegramAlert() {
+            if (tg) {
+                tg.showAlert('🧪 Это тестовый алерт от Telegram Mini App!');
+            } else {
+                alert('Демо-режим: ' + '🧪 Это тестовый алерт от Telegram Mini App!');
+            }
+        }
+        
+        // Показать Confirm
+        function showTelegramConfirm() {
+            if (tg) {
+                tg.showConfirm('Вы действительно хотите продолжить?', function(confirmed) {
+                    if (confirmed) {
+                        showStatus('✅ Пользователь подтвердил');
+                    } else {
+                        showStatus('❌ Пользователь отменил');
+                    }
+                });
+            } else {
+                const confirmed = confirm('Вы действительно хотите продолжить?');
+                showStatus(confirmed ? '✅ Подтверждено (демо)' : '❌ Отменено (демо)');
+            }
+        }
+        
+        // Копирование данных
+        function copyUserData() {
+            const data = JSON.stringify({
+                user: userData,
+                platform: tg ? 'telegram' : 'web',
+                timestamp: new Date().toISOString()
+            }, null, 2);
+            
+            navigator.clipboard.writeText(data).then(function() {
+                showStatus('📋 Данные скопированы в буфер');
+            });
+        }
+        
+        // Расширить на весь экран
+        function expandApp() {
+            if (tg) {
+                tg.expand();
+                updateViewport();
+                showStatus('↔️ Приложение расширено');
+            }
+        }
+        
+        // Закрыть приложение
+        function closeApp() {
+            if (tg) {
+                tg.close();
+            } else {
+                showStatus('❌ В демо-режиме приложение не закрывается');
+            }
+        }
+        
+        // Показать статус
+        function showStatus(message) {
+            const statusEl = document.getElementById('status');
+            if (statusEl) {
+                statusEl.innerHTML = `<span class="status-badge">${message}</span>`;
+                setTimeout(() => {
+                    statusEl.innerHTML = '';
+                }, 2000);
+            }
+        }
+        
+        // Обновляем размеры при изменении окна
+        window.addEventListener('resize', updateViewport);
+    </script>
+</body>
+</html>
